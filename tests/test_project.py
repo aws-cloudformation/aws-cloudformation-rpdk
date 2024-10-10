@@ -431,6 +431,7 @@ def test_configuration_schema_filename(project):
     )
 
 
+# TODO:
 def test_load_schema_with_typeconfiguration(project):
     patch_settings = patch.object(project, "load_settings")
     patch_schema = patch.object(project, "load_schema")
@@ -439,7 +440,7 @@ def test_load_schema_with_typeconfiguration(project):
         project.load()
 
     mock_settings.assert_called_once_with()
-    mock_schema.assert_called_once_with()
+    mock_schema.assert_called_once_with(None)
     mock_configuration_schema.assert_called_once_with()
 
 
@@ -1190,6 +1191,7 @@ def test_init_module(project):
         assert f.read() == b"\n"
 
 
+# TODO:
 def test_load_invalid_schema(project):
     patch_settings = patch.object(project, "load_settings")
     patch_schema = patch.object(
@@ -1201,7 +1203,7 @@ def test_load_invalid_schema(project):
         project.load()
 
     mock_settings.assert_called_once_with()
-    mock_schema.assert_called_once_with()
+    mock_schema.assert_called_once_with(None)
 
     assert "invalid" in str(excinfo.value)
 
@@ -1292,7 +1294,7 @@ def test_schema_not_found(project):
         project.load()
 
     mock_settings.assert_called_once_with()
-    mock_schema.assert_called_once_with()
+    mock_schema.assert_called_once_with(None)
 
     assert "not found" in str(excinfo.value)
 

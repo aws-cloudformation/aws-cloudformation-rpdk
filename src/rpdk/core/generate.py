@@ -11,7 +11,7 @@ LOG = logging.getLogger(__name__)
 
 def generate(args):
     project = Project()
-    project.load()
+    project.load(args)
     project.generate(
         args.endpoint_url,
         args.region,
