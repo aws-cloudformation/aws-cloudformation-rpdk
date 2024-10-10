@@ -1,8 +1,6 @@
-import json
 import logging
 
-import cfnlint.config
-import cfnlint.core
+from cfnlint import lint
 
 from .module_fragment_reader import _get_fragment_file
 
@@ -27,11 +25,13 @@ def print_cfn_lint_warnings(fragment_dir):
 
 def __get_cfn_lint_matches(fragment_dir):
     filepath = _get_fragment_file(fragment_dir)
+
     try:
-        try:
-            template = cfnlint.decode.cfn_json.load(filepath)
-        except json.decoder.JSONDecodeError:
-            template = cfnlint.decode.cfn_yaml.load(filepath)
+        with open(filepath, encoding="utf-8") as handle:
+            template = handle.read()
+            matches = lint(template, config={"regions": ["us-east-1"]})
+
+            return matches
     except Exception as e:  # pylint: disable=broad-except
         LOG.error(
             "Skipping cfn-lint validation due to an internal error.\n"
@@ -40,14 +40,3 @@ def __get_cfn_lint_matches(fragment_dir):
         )
         LOG.error(str(e))
         return []
-
-    # Initialize the ruleset to be applied (no overrules, no excludes)
-    rules = cfnlint.core.get_rules([], [], [], [], False, [])
-
-    # Default region used by cfn-lint
-    regions = ["us-east-1"]
-
-    # Runs Warning and Error rules
-    matches = cfnlint.core.run_checks(filepath, template, rules, regions)
-
-    return matches
