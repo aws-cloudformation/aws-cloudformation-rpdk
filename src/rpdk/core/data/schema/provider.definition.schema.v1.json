@@ -4,7 +4,7 @@
     "title": "CloudFormation Resource Provider Definition MetaSchema",
     "description": "This schema validates a CloudFormation resource provider definition.",
     "definitions": {
-	"handlerSchema": {
+        "handlerSchema": {
             "type": "object",
             "properties": {
                 "properties": {
@@ -23,7 +23,9 @@
                     "$ref": "base.definition.schema.v1.json#/definitions/schemaArray"
                 }
             },
-            "required": ["properties"],
+            "required": [
+                "properties"
+            ],
             "additionalProperties": false
         },
         "handlerDefinitionWithSchemaOverride": {
