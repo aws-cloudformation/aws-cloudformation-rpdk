@@ -15,18 +15,13 @@ from rpdk.core.data_loaders import resource_json
 from rpdk.core.exceptions import FragmentValidationError
 
 from .lint_warning_printer import print_cfn_lint_warnings
-from .module_fragment_reader import get_template_file_size_in_bytes, read_raw_fragments
+from .module_fragment_reader import read_raw_fragments
 
 LOG = logging.getLogger(__name__)
 FRAGMENT_DIR = "fragments"
 SAMPLE_FRAGMENT_OUTPUT = "sample.json"
 SCHEMA_NAME = "schema.json"
 SAMPLE_FRAGMENT = "../data/examples/module/sample.json"
-RESOURCE_LIMIT = 500
-OUTPUT_LIMIT = 200
-MAPPING_LIMIT = 200
-MAPPING_ATTRIBUTE_LIMIT = 200
-TEMPLATE_FILE_SIZE_IN_BYTES_LIMIT = 1500000
 
 
 class TemplateFragment:  # pylint: disable=too-many-instance-attributes
@@ -34,11 +29,6 @@ class TemplateFragment:  # pylint: disable=too-many-instance-attributes
         self.root = Path(root) if root else Path.cwd()
         self.fragment_dir = self.root / FRAGMENT_DIR
         self.type_name = type_name
-        self.resource_limit = RESOURCE_LIMIT
-        self.output_limit = OUTPUT_LIMIT
-        self.mapping_limit = MAPPING_LIMIT
-        self.mapping_attribute_limit = MAPPING_ATTRIBUTE_LIMIT
-        self.template_file_size_in_bytes_limit = TEMPLATE_FILE_SIZE_IN_BYTES_LIMIT
 
         LOG.debug("Fragment directory: %s", self.fragment_dir)
 
@@ -69,17 +59,13 @@ class TemplateFragment:  # pylint: disable=too-many-instance-attributes
             since it can occur anywhere in the template.
         """
         raw_fragments = read_raw_fragments(self.fragment_dir)
-        self.__validate_file_size_limit()
         self.__validate_resources(raw_fragments)
-        self.__validate_parameters(raw_fragments)
         self.__validate_no_transforms_present(raw_fragments)
         self.__validate_outputs(raw_fragments)
-        self.__validate_mappings(raw_fragments)
         print_cfn_lint_warnings(self.fragment_dir)
 
     def __validate_outputs(self, raw_fragments):
         self.__validate_no_exports_present(raw_fragments)
-        self.__validate_output_limit(raw_fragments)
 
     @staticmethod
     def __validate_no_exports_present(raw_fragments):
@@ -91,24 +77,7 @@ class TemplateFragment:  # pylint: disable=too-many-instance-attributes
                         "Found an Export statement in Output: " + _output_name
                     )
 
-    def __validate_output_limit(self, raw_fragments):
-        if "Outputs" in raw_fragments:
-            output_count = len(raw_fragments["Outputs"].items())
-            if output_count > self.output_limit:
-                raise FragmentValidationError(
-                    "The Module template fragment has "
-                    + str(output_count)
-                    + " outputs but must not exceed the limit of "
-                    + str(self.output_limit)
-                    + " outputs"
-                )
-
     def __validate_resources(self, raw_fragments):
-        if "Resources" not in raw_fragments:
-            raise FragmentValidationError(
-                "A Module template fragment must have a Resources section"
-            )
-        self.__validate_resource_limit(raw_fragments)
         for _resource_name, resource in raw_fragments["Resources"].items():
             if "Type" in resource:
                 self.__validate_no_nested_stacks(resource)
@@ -117,10 +86,6 @@ class TemplateFragment:  # pylint: disable=too-many-instance-attributes
                 self.__validate_no_include(resource)
                 raise FragmentValidationError(
                     "Resource '" + _resource_name + "' is invalid"
-                )
-            else:
-                raise FragmentValidationError(
-                    "Resource '" + _resource_name + "' has neither Type nor Name"
                 )
 
     @staticmethod
@@ -142,26 +107,6 @@ class TemplateFragment:  # pylint: disable=too-many-instance-attributes
                 "Template fragment can't contain nested stack."
             )
 
-    def __validate_resource_limit(self, raw_fragments):
-        resource_count = len(raw_fragments["Resources"].items())
-        if resource_count > self.resource_limit:
-            raise FragmentValidationError(
-                "The Module template fragment has "
-                + str(resource_count)
-                + " resources but must not exceed the limit of "
-                + str(self.resource_limit)
-                + " resources"
-            )
-
-    @staticmethod
-    def __validate_parameters(raw_fragments):
-        if "Parameters" in raw_fragments:
-            for _parameter_name, parameter in raw_fragments["Parameters"].items():
-                if "Type" not in parameter:
-                    raise FragmentValidationError(
-                        "Parameter '" + _parameter_name + "' must have a Type"
-                    )
-
     @staticmethod
     def __validate_no_transforms_present(raw_fragments):
         if "transform" in raw_fragments or "Transform" in raw_fragments:
@@ -171,45 +116,6 @@ class TemplateFragment:  # pylint: disable=too-many-instance-attributes
         if "Fn::Transform" in raw_fragments:
             raise FragmentValidationError(
                 "Template fragment can't contain any transform."
-            )
-
-    def __validate_mappings(self, raw_fragments):
-        self.__validate_mapping_limit(raw_fragments)
-        self.__validate_mapping_attribute_limit(raw_fragments)
-
-    def __validate_mapping_limit(self, raw_fragments):
-        if "Mappings" in raw_fragments:
-            mapping_count = len(raw_fragments["Mappings"].items())
-            if mapping_count > self.mapping_limit:
-                raise FragmentValidationError(
-                    "The Module template fragment has "
-                    + str(mapping_count)
-                    + " mappings but must not exceed the limit of "
-                    + str(self.output_limit)
-                    + " mappings"
-                )
-
-    def __validate_mapping_attribute_limit(self, raw_fragments):
-        if "Mappings" in raw_fragments:
-            for _mapping_name, mapping in raw_fragments["Mappings"].items():
-                attribute_count = len(mapping.items())
-                if attribute_count > self.mapping_attribute_limit:
-                    raise FragmentValidationError(
-                        "The mapping "
-                        + _mapping_name
-                        + " has "
-                        + str(attribute_count)
-                        + " attributes but must not exceed the limit of "
-                        + str(self.output_limit)
-                        + " mapping attributes"
-                    )
-
-    def __validate_file_size_limit(self):
-        total_size = get_template_file_size_in_bytes(self.fragment_dir)
-        if total_size > self.template_file_size_in_bytes_limit:
-            raise FragmentValidationError(
-                "The total file size of the template"
-                " fragments exceeds the CloudFormation Template size limit"
             )
 
     @staticmethod

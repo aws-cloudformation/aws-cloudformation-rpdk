@@ -14,10 +14,6 @@ def read_raw_fragments(fragment_dir):
     return _load_fragment(_get_fragment_file(fragment_dir))
 
 
-def get_template_file_size_in_bytes(fragment_dir):
-    return os.stat(_get_fragment_file(fragment_dir)).st_size
-
-
 def _load_fragment(fragment_file):
     try:
         with open(fragment_file, "r", encoding="utf-8") as f:

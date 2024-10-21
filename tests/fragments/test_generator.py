@@ -208,14 +208,6 @@ def test_template_fragments_invalid_transform(template_fragment):
     )
 
 
-def test_template_fragments_resource_without_type(template_fragment):
-    __assert_throws_validation_error(
-        "resource_without_type_or_name.json",
-        template_fragment,
-        "has neither Type nor Name",
-    )
-
-
 def test_template_fragments_macros(template_fragment):
     __assert_throws_validation_error(
         "macros.yaml", template_fragment, "can't contain any macro"
@@ -228,12 +220,6 @@ def test_template_fragments_nested_stack(template_fragment):
     )
 
 
-def test_template_fragments_parameter_without_type(template_fragment):
-    __assert_throws_validation_error(
-        "parameter_without_type.json", template_fragment, "must have a Type"
-    )
-
-
 def test_template_fragments_transform(template_fragment):
     __assert_throws_validation_error(
         "transform.json", template_fragment, "can't contain transform section"
@@ -243,12 +229,6 @@ def test_template_fragments_transform(template_fragment):
 def test_template_fragments_transform_section(template_fragment):
     __assert_throws_validation_error(
         "transform_section.json", template_fragment, "can't contain transform section"
-    )
-
-
-def test_template_fragments_without_resources(template_fragment):
-    __assert_throws_validation_error(
-        "noresources.json", template_fragment, "must have a Resources section"
     )
 
 
@@ -270,57 +250,6 @@ def test_template_fragments_output_without_export_is_valid(template_fragment):
 
 def test_template_fragments_with_sub_is_valid(template_fragment):
     __assert_validation_throws_no_error("ec2withsub.yaml", template_fragment)
-
-
-def test_template_exceeding_resource_limit(template_fragment):
-    template_fragment.resource_limit = 2
-    __assert_throws_validation_error(
-        "fragment_three_resources.json",
-        template_fragment,
-        "has 3 resources but must not exceed the limit of 2",
-    )
-
-
-def test_template_exceeding_output_limit(template_fragment):
-    template_fragment.output_limit = 2
-    __assert_throws_validation_error(
-        "fragment_three_outputs.json",
-        template_fragment,
-        "has 3 outputs but must not exceed the limit of 2",
-    )
-
-
-def test_template_exceeding_mapping_limit(template_fragment):
-    template_fragment.mapping_limit = 2
-    __assert_throws_validation_error(
-        "fragment_three_mappings.json",
-        template_fragment,
-        "has 3 mappings but must not exceed the limit of 2",
-    )
-
-
-def test_template_exceeding_mapping_attribute_limit(template_fragment):
-    template_fragment.mapping_attribute_limit = 2
-    __assert_throws_validation_error(
-        "fragment_mapping_with_three_attributes.json",
-        template_fragment,
-        "has 3 attributes but must not exceed the limit of 2",
-    )
-
-
-def test_template_mappings_dont_exceed_any_limit(template_fragment):
-    __assert_validation_throws_no_error(
-        "fragment_mapping_with_three_attributes.json", template_fragment
-    )
-
-
-def test_template_exceeding_file_size_limit(template_fragment):
-    template_fragment.template_file_size_in_bytes_limit = 300
-    __assert_throws_validation_error(
-        "sample.json",
-        template_fragment,
-        "exceeds the CloudFormation Template size limit",
-    )
 
 
 def test_template_folder_with_multiple_fragment_files():
