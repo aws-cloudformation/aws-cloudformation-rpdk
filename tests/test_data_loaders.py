@@ -213,6 +213,52 @@ def test_load_resource_spec_invalid_snippets(example):
         with pytest.raises(SpecValidationError):
             load_resource_spec(f)
 
+@pytest.mark.parametrize(
+    "test_props",
+    [
+        {
+            'schema': "invalid_read_only_properties_not_defined.json",
+            'schema_key': "readOnlyProperties",
+            'property': "properties/property2",
+        },
+        {
+            'schema': "invalid_create_only_properties_not_defined.json",
+            'schema_key': "createOnlyProperties",
+            'property': "properties/property2",
+        },
+        {
+            'schema': "invalid_primary_identifier_not_defined.json",
+            'schema_key': "primaryIdentifier",
+            'property': "properties/property2",
+        },
+        {
+            'schema': "invalid_required_not_defined.json",
+            'schema_key': "required",
+            'property': "property2",
+        },
+        {
+            'schema': "invalid_additional_identifiers_not_defined.json",
+            'schema_key': "additionalIdentifiers",
+            'property': "/properties/property2",
+        },
+        {
+            'schema': "invalid_deprecated_properties_not_defined.json",
+            'schema_key': "deprecatedProperties",
+            'property': "/properties/property2",
+        },
+        {
+            'schema': "invalid_write_only_properties_not_defined.json",
+            'schema_key': "writeOnlyProperties",
+            'property': "/properties/property2",
+        },
+    ],
+)
+def test_load_resource_spec_property_not_defined(test_props):
+    schema = BASEDIR / "data" / "schema" / "invalid" / test_props["schema"]
+    with schema.open("r", encoding="utf-8") as f:
+        with pytest.raises(SpecValidationError) as excinfo:
+            load_resource_spec(f)
+            assert f"The following properties are listed in '{test_props['schema_key']}' but not defined in '{test_props['property']}': /properties/property2"in str(excinfo.value)
 
 def test_load_resource_spec_remote_key_is_invalid():
     schema = {

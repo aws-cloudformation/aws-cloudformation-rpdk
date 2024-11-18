@@ -320,6 +320,8 @@ def load_resource_spec(resource_spec_file):  # pylint: disable=R # noqa: C901
             read_only_properties_intersection,
         )
 
+    verify_listed_properties_are_defined(resource_spec)
+
     for handler in resource_spec.get("handlers", []):
         for permission in resource_spec.get("handlers", [])[handler]["permissions"]:
             if "*" in permission:
@@ -390,6 +392,54 @@ def load_resource_spec(resource_spec_file):  # pylint: disable=R # noqa: C901
         raise InternalError() from e
 
     return inlined
+
+def verify_listed_properties_are_defined(resource_spec):
+    LOG.debug("verify_listed_properties_are_defined")
+
+    schema_keys = [
+        "readOnlyProperties",
+        "createOnlyProperties",
+        "primaryIdentifier",
+        "required",
+        "additionalIdentifiers",
+        "deprecatedProperties",
+        "writeOnlyProperties",
+    ]
+    for schema_key in schema_keys:
+        verify_top_level_properties_are_defined(resource_spec, schema_key)
+
+def verify_top_level_properties_are_defined(resource_spec, schema_key):
+    LOG.debug("verify_top_level_properties_are_defined: %s", schema_key)
+
+    properties = get_properties_from_schema_key(resource_spec, schema_key)
+
+    nested_properties = set(filter(lambda property: "/" in property, properties))
+    top_level_properties = properties - nested_properties
+
+    if len(top_level_properties):
+        defined_properties = get_defined_properties(resource_spec)
+        nondefined_top_level_properties = top_level_properties - defined_properties
+
+        if nondefined_top_level_properties:
+            raise SpecValidationError(
+                get_properties_not_defined_error_message(schema_key, nondefined_top_level_properties)
+            )
+
+def get_defined_properties(resource_spec):
+    return set(resource_spec.get("properties", []))
+
+def get_properties_from_schema_key(resource_spec, schema_key):
+    if schema_key == "additionalIdentifiers":
+        # additionalIdentifiers is a 2 dimensional list, we need to flatten it
+        properties = resource_spec.get(schema_key, [[]])
+        properties = {prop for identifier in properties for prop in identifier}
+    else:
+        properties = resource_spec.get(schema_key, [])
+
+    return set(map(lambda property: property.replace("/properties/", ""), properties))
+
+def get_properties_not_defined_error_message(key, properties):
+    return f"The following properties are listed in '{key}' but not defined in 'properties': {', '.join(properties)}"
 
 
 def load_hook_spec(hook_spec_file):  # pylint: disable=R # noqa: C901
