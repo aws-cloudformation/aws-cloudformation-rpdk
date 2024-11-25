@@ -153,6 +153,8 @@ BASIC_TYPE_MAPPINGS = {
 
 MARKDOWN_RESERVED_CHARACTERS = frozenset({"^", "*", "+", ".", "(", "[", "{", "#"})
 
+HOOK_SPECIAL_TARGET_NAMES = frozenset(("STACK", "CHANGE_SET"))
+
 
 def escape_markdown(string):
     """Escapes the reserved Markdown characters."""
@@ -1313,6 +1315,11 @@ class Project:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         }
 
         LOG.debug("Hook schema target names: %s", str(target_names))
+
+        if self.artifact_type == ARTIFACT_TYPE_HOOK:
+            target_names = list(
+                filter(lambda x: x not in HOOK_SPECIAL_TARGET_NAMES, target_names)
+            )
 
         if local_only:
             targets = TypeNameResolver.resolve_type_names_locally(

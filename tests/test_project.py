@@ -2526,10 +2526,16 @@ def test__load_target_info_for_hooks(project):
     project.schema = {
         "handlers": {
             "preCreate": {
-                "targetNames": ["AWS::TestHook::Target", "AWS::TestHook::OtherTarget"]
+                "targetNames": [
+                    "AWS::TestHook::Target",
+                    "AWS::TestHook::OtherTarget",
+                    "STACK",
+                    "CHANGE_SET",
+                ]
             },
             "preUpdate": {
                 "targetNames": [
+                    "CHANGE_SET",
                     "AWS::TestHookOne::Target",
                     "AWS::TestHookTwo::Target",
                     "AWS::ArrayHook::Target",
