@@ -74,6 +74,8 @@ RUNTIME = random.choice(
         "go1.x",
         "python3.8",
         "python3.9",
+        "python3.10",
+        "python3.11",
         "dotnetcore2.1",
         "nodejs10.x",
         "nodejs12.x",

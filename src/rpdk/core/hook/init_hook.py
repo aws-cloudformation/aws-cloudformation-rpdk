@@ -12,7 +12,7 @@ from rpdk.core.utils.init_utils import input_with_validation, print_error
 
 LOG = logging.getLogger(__name__)
 HOOK_TYPE_NAME_REGEX = r"^[a-zA-Z0-9]{2,64}::[a-zA-Z0-9]{2,64}::[a-zA-Z0-9]{2,64}$"
-HOOK_PLUGINS = ("java", "python37", "python38", "python39")
+HOOK_PLUGINS = ("java", "python38", "python39", "python310", "python311", "python312")
 
 
 def init_hook(args, project):
