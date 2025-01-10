@@ -1128,6 +1128,37 @@ def test_make_payload(resource_client):
     }
 
 
+def test_make_payload_with_stack_id(resource_client):
+    patch_creds = patch(
+        "rpdk.core.contract.resource_client.get_temporary_credentials",
+        autospec=True,
+        return_value={},
+    )
+
+    token = "ecba020e-b2e6-4742-a7d0-8a06ae7c4b2f"
+    with patch.object(
+        resource_client, "generate_token", return_value=token
+    ), patch_creds:
+        payload = resource_client._make_payload("CREATE", {"foo": "bar"}, stackId="test-stack")
+
+    assert payload == {
+        "requestData": {
+            "callerCredentials": {},
+            "resourceProperties": {"foo": "bar"},
+            "previousResourceProperties": None,
+            "logicalResourceId": token,
+            "typeConfiguration": None,
+        },
+        "region": DEFAULT_REGION,
+        "awsAccountId": ACCOUNT,
+        "action": "CREATE",
+        "bearerToken": token,
+        "callbackContext": None,
+        "resourceType": None,
+        "stackId": "test-stack",
+    }
+
+
 @pytest.mark.parametrize("action", [Action.READ, Action.LIST])
 def test_call_sync(resource_client, action):
     patch_creds = patch(
