@@ -761,11 +761,13 @@ class Project:  # pylint: disable=too-many-instance-attributes,too-many-public-m
             LOG.debug("%s found. Writing to package.", OVERRIDES_FILENAME)
         except FileNotFoundError:
             LOG.debug("%s not found. Not writing to package.", OVERRIDES_FILENAME)
+        
 
     def _add_resources_content_to_zip(self, zip_file):
         zip_file.write(self.schema_path, SCHEMA_UPLOAD_FILENAME)
         if os.path.isdir(self.inputs_path):
-            for filename in os.listdir(self.inputs_path):
+            input_files = os.listdir(self.inputs_path)
+            for filename in list(filter(lambda f: f.endsWith('.json'), input_files)):
                 absolute_path = self.inputs_path / filename
                 zip_file.write(absolute_path, INPUTS_FOLDER + "/" + filename)
                 LOG.debug("%s found. Writing to package.", filename)
