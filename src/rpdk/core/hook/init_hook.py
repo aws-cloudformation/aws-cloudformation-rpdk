@@ -97,7 +97,9 @@ def validate_type_name(value):
 
 class ValidatePluginChoice:
     def __init__(self, choices):
-        self.choices = tuple(filter(lambda l: l in HOOK_PLUGINS, choices))
+        self.choices = tuple(
+            filter(lambda hook_plugin: hook_plugin in HOOK_PLUGINS, choices)
+        )
         self.max = len(self.choices)
 
         pretty = "\n".join(
