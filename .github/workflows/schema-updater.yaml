@@ -12,7 +12,7 @@ jobs:
           curl https://raw.githubusercontent.com/aws-cloudformation/aws-cloudformation-resource-schema/master/src/main/resources/schema/provider.configuration.definition.schema.v1.json > src/rpdk/core/data/schema/provider.configuration.definition.schema.v1.json
           curl https://raw.githubusercontent.com/aws-cloudformation/aws-cloudformation-resource-schema/master/src/main/resources/schema/base.definition.schema.v1.json > src/rpdk/core/data/schema/base.definition.schema.v1.json
           curl https://raw.githubusercontent.com/aws-cloudformation/aws-cloudformation-resource-schema/master/src/main/resources/schema/schema > src/rpdk/core/data/schema/meta-schema.json
-      - uses: peter-evans/create-pull-request@v5
+      - uses: peter-evans/create-pull-request@v6
         with:
           commit-message: |
             CloudFormation Resource Provider Definition MetaSchema update
